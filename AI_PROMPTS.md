@@ -130,3 +130,6 @@ describe('InventoryService', () => {
 
 4. What is the best structural solution for this problem? I have a basic gilded rose problem. It's a cheese and wine store with specific logic per product. What is de best refactoring structure that I should use?
 
+5. Do I still need to add validatPipe to the main.ts of my nestjs project?
+
+6. Can you recheck my test file for tests I could have forgotten?

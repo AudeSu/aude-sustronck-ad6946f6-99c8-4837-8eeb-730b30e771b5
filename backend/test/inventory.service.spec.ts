@@ -6,25 +6,13 @@ import { QualityStrategyFactory } from '../src/module/inventory/domain/quality-s
 
 describe('InventoryService', () => {
 	let service: InventoryService;
-	let repository: ProductRepository;
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				InventoryService,
-				QualityStrategyFactory,
-				{
-					provide: ProductRepository,
-					useValue: {
-						getMany: jest.fn(),
-						save: jest.fn(),
-					},
-				},
-			],
+			providers: [InventoryService, QualityStrategyFactory, ProductRepository],
 		}).compile();
 
 		service = module.get<InventoryService>(InventoryService);
-		repository = module.get<ProductRepository>(ProductRepository);
 	});
 
 	describe('Normal Products', () => {
@@ -259,6 +247,16 @@ describe('InventoryService', () => {
 
 			expect(products[0].quality).toBe(0);
 		});
+
+		it('should handle Grapes quality edge case: quality=2, expired', () => {
+			const products: ProductDto[] = [
+				{ id: '1', name: 'Grapes', sellIn: 0, quality: 2 },
+			];
+
+			service.updateProducts(products);
+
+			expect(products[0].quality).toBe(0);
+		});
 	});
 
 	describe('Edge Cases', () => {
@@ -342,6 +340,19 @@ describe('InventoryService', () => {
 			service.updateProducts(products);
 			expect(products[0].sellIn).toBe(-1);
 			expect(products[0].quality).toBe(50);
+		});
+	});
+
+	describe('Unknown Products', () => {
+		it('should treat unknown product names as normal products', () => {
+			const products: ProductDto[] = [
+				{ id: '1', name: 'Apple', sellIn: 10, quality: 20 },
+			];
+
+			service.updateProducts(products);
+
+			expect(products[0].sellIn).toBe(9);
+			expect(products[0].quality).toBe(19);
 		});
 	});
 });
