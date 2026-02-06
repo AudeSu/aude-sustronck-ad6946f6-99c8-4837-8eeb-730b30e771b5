@@ -21,3 +21,5 @@ When using AI assistance, document:
 5. Any learning outcomes
 
 ## Used AI Prompts
+1. How do I generate an uuid?
+2. 
