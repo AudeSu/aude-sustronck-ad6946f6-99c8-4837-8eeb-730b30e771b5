@@ -128,4 +128,5 @@ describe('InventoryService', () => {
 });
 ```
 
-4. 
+4. What is the best structural solution for this problem? I have a basic gilded rose problem. It's a cheese and wine store with specific logic per product. What is de best refactoring structure that I should use?
+

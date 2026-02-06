@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { InventoryService } from '../src/module/inventory/service/inventory.service';
 import { ProductRepository } from '../src/module/data/repository/product.repository';
 import { ProductDto } from '../src/module/api/domain/dto/product/product.dto';
+import { QualityStrategyFactory } from '../src/module/inventory/domain/quality-strategy.factory';
 
 describe('InventoryService', () => {
 	let service: InventoryService;
@@ -11,6 +12,7 @@ describe('InventoryService', () => {
 		const module: TestingModule = await Test.createTestingModule({
 			providers: [
 				InventoryService,
+				QualityStrategyFactory,
 				{
 					provide: ProductRepository,
 					useValue: {
