@@ -1,60 +1,43 @@
 import { Injectable } from '@nestjs/common';
 import { ProductRepository } from '../../data/repository/product.repository';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ProductDto } from 'src/module/api/domain/dto/product/product.dto';
+import { QualityStrategyFactory } from '../domain/quality-strategy.factory';
+import { ProductType, ProductTypeHelper } from '../domain/product-type.enum';
 
 @Injectable()
 export class InventoryService {
-	constructor(private readonly productRepository: ProductRepository) {}
+	constructor(
+		private readonly productRepository: ProductRepository,
+		private readonly strategyFactory: QualityStrategyFactory,
+	) {}
 
 	@Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
 	async updateQuality(): Promise<void> {
 		const products = await this.productRepository.getMany();
-		for (let i = 0; i < products.length; i++) {
-			if (products[i].name != 'Wine' && products[i].name != 'Brie') {
-				if (products[i].quality > 0) {
-					if (products[i].name != 'Nuts') {
-						products[i].quality = products[i].quality - 1;
-					}
-				}
-			} else {
-				if (products[i].quality < 50) {
-					products[i].quality = products[i].quality + 1;
-					if (products[i].name == 'Brie') {
-						if (products[i].sellIn < 11) {
-							if (products[i].quality < 50) {
-								products[i].quality = products[i].quality + 1;
-							}
-						}
-						if (products[i].sellIn < 6) {
-							if (products[i].quality < 50) {
-								products[i].quality = products[i].quality + 1;
-							}
-						}
-					}
-				}
-			}
-			if (products[i].name != 'Nuts') {
-				products[i].sellIn = products[i].sellIn - 1;
-			}
-			if (products[i].sellIn < 0) {
-				if (products[i].name != 'Wine') {
-					if (products[i].name != 'Brie') {
-						if (products[i].quality > 0) {
-							if (products[i].name != 'Nuts') {
-								products[i].quality = products[i].quality - 1;
-							}
-						}
-					} else {
-						products[i].quality = products[i].quality - products[i].quality;
-					}
-				} else {
-					if (products[i].quality < 50) {
-						products[i].quality = products[i].quality + 1;
-					}
-				}
-			}
+		this.updateProducts(products);
+		await this.productRepository.save(products);
+	}
+
+	updateProducts(products: ProductDto[]): void {
+		for (const product of products) {
+			this.updateSingleProduct(product);
+		}
+	}
+
+	private updateSingleProduct(product: ProductDto): void {
+		const strategy = this.strategyFactory.getStrategy(product.name);
+
+		if (ProductTypeHelper.fromName(product.name) === ProductType.NUTS) {
+			strategy.updateQuality(product);
+			return;
 		}
 
-		await this.productRepository.save(products);
+		strategy.updateQuality(product);
+		product.sellIn--;
+
+		if (product.sellIn < 0) {
+			strategy.handleExpired(product);
+		}
 	}
 }

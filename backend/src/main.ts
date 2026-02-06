@@ -6,6 +6,7 @@ import loggerConfig from './configuration/loggerConfig';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { Server } from 'http';
 import compression from 'compression';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap(): Promise<void> {
 	// Start app
@@ -13,6 +14,14 @@ async function bootstrap(): Promise<void> {
 		logger: loggerConfig,
 		bodyParser: true,
 	});
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true,
+			forbidNonWhitelisted: true,
+			transform: true,
+		}),
+	);
+
 	app.useBodyParser('json', { limit: '50mb' });
 	app.use(compression());
 	app.enableCors();
@@ -31,7 +40,7 @@ async function bootstrap(): Promise<void> {
 	const server: Server = httpAdapter.getHttpServer();
 	server.keepAliveTimeout = 60000;
 
-	await app.listen(process.env.PORT);
+	await app.listen(process.env.PORT || 3333);
 }
 
 (async () => {
