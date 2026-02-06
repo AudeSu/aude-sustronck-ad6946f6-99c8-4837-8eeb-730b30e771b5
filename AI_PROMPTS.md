@@ -22,4 +22,110 @@ When using AI assistance, document:
 
 ## Used AI Prompts
 1. How do I generate an uuid?
-2. 
+
+2. I get this error in my test files, how can i fix this?
+```
+Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.ts(2593)
+```
+An this is my tsconfig.json file:
+```
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "es2017",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "paths": {
+      "*": ["*"]
+    },
+    "incremental": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+3. Kun je mijn inventory.service.spec.ts file uitbreiden met nog extra tests? Dit zijn mijn testen die ik al reeds heb en ik zal je ook de inventory.service.ts meegeven. Ik zou graag nog uitgebreide testen hebben voor de andere producten.
+```
+import { Test, TestingModule } from '@nestjs/testing';
+import { InventoryService } from '../src/module/inventory/service/inventory.service';
+import { ProductRepository } from '../src/module/data/repository/product.repository';
+import { ProductDto } from '../src/module/api/domain/dto/product/product.dto';
+
+describe('InventoryService', () => {
+	let service: InventoryService;
+	let repository: ProductRepository;
+
+	beforeEach(async () => {
+		const module: TestingModule = await Test.createTestingModule({
+			providers: [
+				InventoryService,
+				{
+					provide: ProductRepository,
+					useValue: {
+						getMany: jest.fn(),
+						save: jest.fn(),
+					},
+				},
+			],
+		}).compile();
+
+		service = module.get<InventoryService>(InventoryService);
+		repository = module.get<ProductRepository>(ProductRepository);
+	});
+
+	describe('Normal Products', () => {
+		it('should decrease quality and sellIn by 1 for normal products', () => {
+			const products: ProductDto[] = [
+				{ id: '1', name: 'Normal Cheese', sellIn: 10, quality: 20 },
+			];
+
+			service.updateProducts(products);
+
+			expect(products[0].sellIn).toBe(9);
+			expect(products[0].quality).toBe(19);
+		});
+
+		it('should decrease quality by 2 when sellIn has passed', () => {
+			const products: ProductDto[] = [
+				{ id: '1', name: 'Normal Cheese', sellIn: 0, quality: 20 },
+			];
+
+			service.updateProducts(products);
+
+			expect(products[0].sellIn).toBe(-1);
+			expect(products[0].quality).toBe(18);
+		});
+
+		it('should never have negative quality', () => {
+			const products: ProductDto[] = [
+				{ id: '1', name: 'Normal Cheese', sellIn: 5, quality: 0 },
+			];
+
+			service.updateProducts(products);
+
+			expect(products[0].quality).toBe(0);
+		});
+
+		it('should handle quality reaching 0 after expiration', () => {
+			const products: ProductDto[] = [
+				{ id: '1', name: 'Normal Cheese', sellIn: 0, quality: 1 },
+			];
+
+			service.updateProducts(products);
+
+			expect(products[0].quality).toBe(0);
+		});
+	});
+});
+```
+
+4. 

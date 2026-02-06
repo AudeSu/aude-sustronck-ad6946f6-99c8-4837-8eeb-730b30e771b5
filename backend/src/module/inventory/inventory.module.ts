@@ -6,6 +6,6 @@ import { DataModule } from '../data/data.module';
 	imports: [DataModule],
 	controllers: [],
 	providers: [InventoryService],
-	exports: [],
+	exports: [InventoryService],
 })
 export class InventoryModule {}

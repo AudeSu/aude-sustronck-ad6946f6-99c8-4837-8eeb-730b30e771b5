@@ -16,7 +16,8 @@
     "esModuleInterop": true,
     "allowJs": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["node", "jest"]
   },
   "exclude": ["node_modules", "dist"]
 }

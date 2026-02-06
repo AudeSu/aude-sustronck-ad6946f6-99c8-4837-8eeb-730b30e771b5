@@ -10,7 +10,11 @@ export class InventoryService {
 	@Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
 	async updateQuality(): Promise<void> {
 		const products = await this.productRepository.getMany();
+		this.updateProducts(products);
+		await this.productRepository.save(products);
+	}
 
+	updateProducts(products: ProductDto[]): void {
 		for (const product of products) {
 			switch (product.name) {
 				case 'Wine':
@@ -21,6 +25,9 @@ export class InventoryService {
 					break;
 				case 'Nuts':
 					break;
+				case 'Grapes':
+					this.updateGrapes(product);
+					break;
 				default:
 					this.updateNormal(product);
 			}
@@ -30,8 +37,6 @@ export class InventoryService {
 			this.handleExpired(product);
 			this.clampQuality(product);
 		}
-
-		await this.productRepository.save(products);
 	}
 
 	private updateNormal(product: ProductDto) {
@@ -50,6 +55,10 @@ export class InventoryService {
 		}
 	}
 
+	private updateGrapes(product: ProductDto) {
+		if (product.quality > 0) product.quality -= 2;
+	}
+
 	private handleExpired(product: ProductDto) {
 		if (product.sellIn >= 0) return;
 
@@ -61,6 +70,9 @@ export class InventoryService {
 				product.quality = 0;
 				break;
 			case 'Nuts':
+				break;
+			case 'Grapes':
+				if (product.quality > 0) product.quality -= 2;
 				break;
 			default:
 				if (product.quality > 0) product.quality--;
